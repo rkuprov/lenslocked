@@ -1,5 +1,7 @@
-<h1>Contact Page</h1>
+{{ define "content"}}
+    <h1>Contact Page</h1>
 
-<p>
-    To get a hold of me, please email to <a href="mailto:{{ .Email }}">{{ .Email }}</a>
-</p>
+    <p>
+        To get a hold of me, please email to <a href="mailto:{{ .Email }}">{{ .Email }}</a>
+    </p>
+{{ end }}

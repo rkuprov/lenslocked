@@ -19,8 +19,8 @@ func Must(t *Template, err error) *Template {
 	return t
 }
 
-func ParseTemplate(pattern string) (*Template, error) {
-	t, err := template.ParseFS(templates.FS, pattern)
+func ParseTemplate(patterns ...string) (*Template, error) {
+	t, err := template.ParseFS(templates.FS, patterns...)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing template: %w", err)
 	}
