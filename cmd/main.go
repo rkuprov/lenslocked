@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"lenslocked/pkg/handlers"
 	"lenslocked/pkg/views"
 )
 
@@ -19,12 +20,13 @@ type link struct {
 
 func main() {
 	r := chi.NewRouter()
-	r.Get("/", views.StaticView[any](views.Must(views.ParseTemplate("tailwind.gohtml", "home.gohtml")), link{
-		Title: "Contact me!",
-		URL:   "/contact",
-	}))
-	r.Get("/contact", views.StaticView(views.Must(views.ParseTemplate("tailwind.gohtml", "contact.gohtml")), contact{Email: "kuprov@gmail.com"}))
-	r.Get("/signup", views.StaticView[any](views.Must(views.ParseTemplate("tailwind.gohtml", "signup.gohtml")), nil))
+	r.Get("/", views.StaticView(views.Must(views.ParseTemplate("tailwind.gohtml", "home.gohtml"))))
+	r.Get("/contact", views.RenderedView(views.Must(views.ParseTemplate("tailwind.gohtml", "contact.gohtml")), contact{Email: "kuprov@gmail.com"}))
+
+	var u handlers.User
+	u.Templates.New = views.Must(views.ParseTemplate("tailwind.gohtml", "signup.gohtml"))
+	r.Get("/signup", u.New)
+	r.Post("/users", u.Create)
 
 	http.ListenAndServe("localhost:3000", r)
 

@@ -9,7 +9,7 @@ import (
 )
 
 type Template struct {
-	t *template.Template
+	*template.Template
 }
 
 func Must(t *Template, err error) *Template {
@@ -28,10 +28,27 @@ func ParseTemplate(patterns ...string) (*Template, error) {
 	return &Template{t}, nil
 }
 
-func StaticView[T any](tmpl *Template, data T) http.HandlerFunc {
+func (t *Template) Execute(w http.ResponseWriter, data interface{}) {
+	err := t.Template.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Something went wrong. If the problem persists, please email", http.StatusInternalServerError)
+	}
+
+}
+
+func StaticView(tmpl *Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		err := tmpl.t.Execute(w, data)
+		err := tmpl.Template.Execute(w, nil)
+		if err != nil {
+			http.Error(w, "Something went wrong. If the problem persists, please email", http.StatusInternalServerError)
+		}
+	}
+}
+func RenderedView(tmpl *Template, data interface{}) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		err := tmpl.Template.Execute(w, data)
 		if err != nil {
 			http.Error(w, "Something went wrong. If the problem persists, please email", http.StatusInternalServerError)
 		}
