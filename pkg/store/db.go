@@ -6,10 +6,11 @@ import (
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"lenslocked/cfg"
+	"lenslocked/migrations"
 )
 
 type Store struct {
-	psql *pgxpool.Pool
+	Psql *pgxpool.Pool
 }
 
 func NewStore(pCfg cfg.Postgres) (*Store, error) {
@@ -25,17 +26,15 @@ func NewStore(pCfg cfg.Postgres) (*Store, error) {
 		return nil, err
 	}
 	return &Store{
-		psql: psql,
+		Psql: psql,
 	}, nil
 }
 
-func (s *Store) Test() error {
-	fmt.Println("testing")
-	_, err := s.psql.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS test (id serial PRIMARY KEY, name VARCHAR(50) NOT NULL)")
+func (s *Store) Setup(ctx context.Context) error {
+	_, err := s.Psql.Exec(ctx, migrations.UserTable)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("table created. test complete")
 	return nil
 }

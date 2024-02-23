@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	cfg2 "lenslocked/cfg"
@@ -24,6 +25,7 @@ type link struct {
 }
 
 func main() {
+	ctx := context.Background()
 	var cfg cfg2.Cfg
 	fmt.Println(os.Getwd())
 	err := cfg.Load(filepath.Join("secrets", "cfg.json"))
@@ -35,7 +37,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = client.Test()
+	err = client.Setup(ctx)
 	if err != nil {
 		panic(err)
 	}
