@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"lenslocked/pkg/services"
 	"net/http"
 )
 
@@ -10,6 +11,7 @@ type User struct {
 		New    TemplateExecutor
 		Create TemplateExecutor
 	}
+	Service *services.UserService
 }
 
 func (u User) New(w http.ResponseWriter, r *http.Request) {
@@ -25,6 +27,10 @@ func (u User) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "error parsing form", http.StatusInternalServerError)
 	}
-	fmt.Fprintf(w, "Email is %s\n", r.FormValue("email"))
-	fmt.Fprintf(w, "Password is %s\n", r.FormValue("password"))
+	id, err := u.Service.Create(r.FormValue("email"), r.FormValue("password"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	w.Write([]byte(fmt.Sprintf("User created with id: %d", id)))
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	cfg2 "lenslocked/cfg"
+	"lenslocked/pkg/services"
 	"lenslocked/pkg/store"
 	"net/http"
 	"os"
@@ -32,7 +33,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(cfg.Postgres)
 	client, err := store.NewStore(cfg.Postgres)
 	if err != nil {
 		panic(err)
@@ -48,6 +48,7 @@ func main() {
 
 	var u handlers.User
 	u.Templates.New = views.Must(views.ParseTemplate("tailwind.gohtml", "signup.gohtml"))
+	u.Service = services.NewUserService(ctx, client)
 	r.Get("/signup", u.New)
 	r.Post("/users", u.Create)
 
