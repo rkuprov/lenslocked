@@ -41,3 +41,19 @@ func (s *UserService) Create(email, password string) (int, error) {
 func hashPassword(password string) ([]byte, error) {
 	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 }
+
+func (s *UserService) Authenticate(email, password string) error {
+	var pwHash string
+	err := s.db.Psql.QueryRow(s.ctx, UserGetPasswordHashSQL, strings.ToLower(email)).Scan(&pwHash)
+	if err != nil {
+		return fmt.Errorf("could not find user: %w", err)
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(pwHash), []byte(password))
+	if err != nil {
+		bts, _ := hashPassword(password)
+		return fmt.Errorf("user pwd %s\n user-hash: %s\n required hash: %s\n: %w", password, pwHash, string(bts), err)
+	}
+
+	return nil
+}
