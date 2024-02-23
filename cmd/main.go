@@ -1,8 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
+	cfg2 "lenslocked/cfg"
+	"lenslocked/pkg/store"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/go-chi/chi/v5"
 
@@ -19,6 +24,22 @@ type link struct {
 }
 
 func main() {
+	var cfg cfg2.Cfg
+	fmt.Println(os.Getwd())
+	err := cfg.Load(filepath.Join("secrets", "cfg.json"))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(cfg.Postgres)
+	client, err := store.NewStore(cfg.Postgres)
+	if err != nil {
+		panic(err)
+	}
+	err = client.Test()
+	if err != nil {
+		panic(err)
+	}
+
 	r := chi.NewRouter()
 	r.Get("/", views.StaticView(views.Must(views.ParseTemplate("tailwind.gohtml", "home.gohtml"))))
 	r.Get("/contact", views.RenderedView(views.Must(views.ParseTemplate("tailwind.gohtml", "contact.gohtml")), contact{Email: "kuprov@gmail.com"}))
