@@ -5,8 +5,13 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/gorilla/csrf"
+
+	"lenslocked/pkg/handlers"
 	"lenslocked/pkg/templates"
 )
+
+var _ handlers.TemplateExecutor = (*Template)(nil)
 
 type Template struct {
 	*template.Template
@@ -20,7 +25,13 @@ func Must(t *Template, err error) *Template {
 }
 
 func ParseTemplate(patterns ...string) (*Template, error) {
-	t, err := template.ParseFS(templates.FS, patterns...)
+	tpl := template.New(patterns[0])
+	tpl.Funcs(template.FuncMap{
+		"csrfField": func() (template.HTML, error) {
+			return "", fmt.Errorf("csrfField not implemented")
+		},
+	})
+	t, err := tpl.ParseFS(templates.FS, patterns...)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing template: %w", err)
 	}
@@ -28,10 +39,19 @@ func ParseTemplate(patterns ...string) (*Template, error) {
 	return &Template{t}, nil
 }
 
-func (t *Template) Execute(w http.ResponseWriter, data interface{}) {
-	err := t.Template.Execute(w, data)
+func (t *Template) Execute(w http.ResponseWriter, r *http.Request, data interface{}) {
+	tmpl, err := t.Clone()
 	if err != nil {
-		http.Error(w, "Something went wrong. If the problem persists, please email", http.StatusInternalServerError)
+		http.Error(w, "failed cloning template", http.StatusInternalServerError)
+	}
+	tmpl.Funcs(template.FuncMap{
+		"csrfField": func() template.HTML {
+			return csrf.TemplateField(r)
+		},
+	})
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		http.Error(w, "failed executing the template", http.StatusInternalServerError)
 	}
 
 }
@@ -39,18 +59,12 @@ func (t *Template) Execute(w http.ResponseWriter, data interface{}) {
 func StaticView(tmpl *Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		err := tmpl.Template.Execute(w, nil)
-		if err != nil {
-			http.Error(w, "Something went wrong. If the problem persists, please email", http.StatusInternalServerError)
-		}
+		tmpl.Execute(w, r, nil)
 	}
 }
 func RenderedView(tmpl *Template, data interface{}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		err := tmpl.Template.Execute(w, data)
-		if err != nil {
-			http.Error(w, "Something went wrong. If the problem persists, please email", http.StatusInternalServerError)
-		}
+		tmpl.Execute(w, r, data)
 	}
 }

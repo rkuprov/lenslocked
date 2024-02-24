@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"fmt"
-	"lenslocked/pkg/services"
 	"net/http"
+
+	"lenslocked/pkg/services"
 )
 
 type User struct {
@@ -21,7 +22,7 @@ func (u User) New(w http.ResponseWriter, r *http.Request) {
 		Email string
 	}
 	data.Email = r.FormValue("email")
-	u.Templates.New.Execute(w, data)
+	u.Templates.New.Execute(w, r, data)
 }
 
 func (u User) Create(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +43,7 @@ func (u User) SignInStatic(w http.ResponseWriter, r *http.Request) {
 		Email string
 	}
 	data.Email = r.FormValue("email")
-	u.Templates.SignInStatic.Execute(w, data)
+	u.Templates.SignInStatic.Execute(w, r, data)
 }
 
 func (u User) SignIn(w http.ResponseWriter, r *http.Request) {

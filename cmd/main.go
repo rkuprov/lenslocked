@@ -4,11 +4,15 @@ import (
 	"context"
 	"fmt"
 	"html/template"
-	cfg2 "lenslocked/cfg"
-	"lenslocked/pkg/services"
-	"lenslocked/pkg/store"
 	"net/http"
 	"path/filepath"
+
+	"github.com/gorilla/csrf"
+
+	cfg2 "lenslocked/cfg"
+	"lenslocked/pkg/auth"
+	"lenslocked/pkg/services"
+	"lenslocked/pkg/store"
 
 	"github.com/go-chi/chi/v5"
 
@@ -40,6 +44,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	csrfMw := csrf.Protect(auth.NewCSRFToken(), csrf.Secure(false))
+
 	r := chi.NewRouter()
 	r.Get("/", views.StaticView(views.Must(views.ParseTemplate("tailwind.gohtml", "home.gohtml"))))
 	r.Get("/contact", views.RenderedView(views.Must(views.ParseTemplate("tailwind.gohtml", "contact.gohtml")), contact{Email: "kuprov@gmail.com"}))
@@ -53,7 +60,7 @@ func main() {
 	r.Get("/signin", u.SignInStatic)
 	r.Post("/signin", u.SignIn)
 
-	err = http.ListenAndServe("localhost:3000", r)
+	err = http.ListenAndServe("localhost:3000", csrfMw(r))
 	if err != nil {
 		panic(err)
 	}

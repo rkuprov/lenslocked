@@ -1,7 +1,9 @@
 {{define "content"}}
     <form action="/users" method="post">
+        <div class="hidden">
+            {{csrfField}}
+        </div>
         <div class="py-12 flex justify-center">
-
             <div class="px-8 py-8 bg-white rounded shadow">
                 <h3 class="text-2xl font-bold py-12 px-18">Register</h3>
                 <div>
