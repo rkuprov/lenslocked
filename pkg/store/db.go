@@ -35,6 +35,9 @@ func (s *Store) Setup(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
+	_, err = s.Psql.Exec(ctx, migrations.SessionTable)
+	if err != nil {
+		return err
+	}
 	return nil
 }
