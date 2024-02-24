@@ -3,40 +3,33 @@ package main
 import (
 	"context"
 	"fmt"
-	"html/template"
 	"net/http"
 	"path/filepath"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/csrf"
 
-	cfg2 "lenslocked/cfg"
+	"lenslocked/cfg"
 	"lenslocked/pkg/auth"
+	"lenslocked/pkg/handlers"
 	"lenslocked/pkg/services"
 	"lenslocked/pkg/store"
-
-	"github.com/go-chi/chi/v5"
-
-	"lenslocked/pkg/handlers"
 	"lenslocked/pkg/views"
 )
 
 type contact struct {
 	Email string
 }
-type link struct {
-	Title string
-	URL   template.HTML
-}
 
 func main() {
 	ctx := context.Background()
-	var cfg cfg2.Cfg
-	err := cfg.Load(filepath.Join("secrets", "cfg.json"))
+	var c cfg.Cfg
+	err := c.Load(filepath.Join("secrets", "c.json"))
 	if err != nil {
 		fmt.Println("error loading config")
 		panic(err)
 	}
-	client, err := store.NewStore(cfg.Postgres)
+	client, err := store.NewStore(c.Postgres)
 	if err != nil {
 		panic(err)
 	}
