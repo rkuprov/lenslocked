@@ -55,6 +55,12 @@ func (u User) SignIn(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-
+	c := http.Cookie{
+		Name:     "lens-user",
+		Value:    r.FormValue("email"),
+		Path:     "/",
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &c)
 	fmt.Fprintf(w, "Sign in successful. User is authenticated.")
 }
