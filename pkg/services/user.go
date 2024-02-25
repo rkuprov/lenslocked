@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"lenslocked/pkg/store"
@@ -23,7 +24,7 @@ func NewUserService(ctx context.Context, db *store.Store) *UserService {
 
 func (s *UserService) Create(email, password string) (int, error) {
 	var id int
-	pwHash, err := hashPassword(password)
+	pwHash, err := hash(password)
 	if err != nil {
 		return 0, fmt.Errorf("could not hash password: %w", err)
 
@@ -38,8 +39,17 @@ func (s *UserService) Create(email, password string) (int, error) {
 	return id, nil
 }
 
-func hashPassword(password string) ([]byte, error) {
-	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+func hash(toHash string) ([]byte, error) {
+	return bcrypt.GenerateFromPassword([]byte(toHash), bcrypt.DefaultCost)
+}
+
+func hashToString(toHash string) (string, error) {
+	bts, err := hash(toHash)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.URLEncoding.EncodeToString(bts), nil
 }
 
 func (s *UserService) Authenticate(email, password string) error {
@@ -51,7 +61,7 @@ func (s *UserService) Authenticate(email, password string) error {
 
 	err = bcrypt.CompareHashAndPassword([]byte(pwHash), []byte(password))
 	if err != nil {
-		bts, _ := hashPassword(password)
+		bts, _ := hash(password)
 		return fmt.Errorf("user pwd %s\n user-hash: %s\n required hash: %s\n: %w", password, pwHash, string(bts), err)
 	}
 

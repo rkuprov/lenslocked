@@ -3,12 +3,12 @@ package views
 import (
 	"fmt"
 	"html/template"
+	"lenslocked/pkg/views/templates"
 	"net/http"
 
 	"github.com/gorilla/csrf"
 
 	"lenslocked/pkg/handlers"
-	"lenslocked/pkg/templates"
 )
 
 var _ handlers.TemplateExecutor = (*Template)(nil)

@@ -24,7 +24,7 @@ type contact struct {
 func main() {
 	ctx := context.Background()
 	var c cfg.Cfg
-	err := c.Load(filepath.Join("secrets", "c.json"))
+	err := c.Load(filepath.Join("secrets", "cfg.json"))
 	if err != nil {
 		fmt.Println("error loading config")
 		panic(err)
