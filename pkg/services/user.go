@@ -2,9 +2,9 @@ package services
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
+	"lenslocked/pkg/auth"
 	"lenslocked/pkg/store"
 	"strings"
 	"time"
@@ -24,14 +24,14 @@ func NewUserService(ctx context.Context, db *store.Store) *UserService {
 
 func (s *UserService) Create(email, password string) (int, error) {
 	var id int
-	pwHash, err := hash(password)
+	pwHash, err := auth.HashToString(password)
 	if err != nil {
-		return 0, fmt.Errorf("could not hash password: %w", err)
+		return 0, fmt.Errorf("could not HashToBytes password: %w", err)
 
 	}
 	err = s.db.Psql.QueryRow(s.ctx, UserAddSQL,
 		strings.ToLower(email),
-		string(pwHash),
+		pwHash,
 		time.Now().UTC().Format(time.RFC3339)).Scan(&id)
 	if err != nil {
 		return 0, fmt.Errorf("could not create user: %w", err)
@@ -39,31 +39,19 @@ func (s *UserService) Create(email, password string) (int, error) {
 	return id, nil
 }
 
-func hash(toHash string) ([]byte, error) {
-	return bcrypt.GenerateFromPassword([]byte(toHash), bcrypt.DefaultCost)
-}
-
-func hashToString(toHash string) (string, error) {
-	bts, err := hash(toHash)
-	if err != nil {
-		return "", err
-	}
-
-	return base64.URLEncoding.EncodeToString(bts), nil
-}
-
-func (s *UserService) Authenticate(email, password string) error {
+func (s *UserService) Authenticate(email, password string) (int, error) {
 	var pwHash string
-	err := s.db.Psql.QueryRow(s.ctx, UserGetPasswordHashSQL, strings.ToLower(email)).Scan(&pwHash)
+	var id int
+	err := s.db.Psql.QueryRow(s.ctx, UserGetPasswordHashSQL, strings.ToLower(email)).Scan(&id, &pwHash)
 	if err != nil {
-		return fmt.Errorf("could not find user: %w", err)
+		return 0, fmt.Errorf("could not find user: %w", err)
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(pwHash), []byte(password))
 	if err != nil {
-		bts, _ := hash(password)
-		return fmt.Errorf("user pwd %s\n user-hash: %s\n required hash: %s\n: %w", password, pwHash, string(bts), err)
+		bts, _ := auth.HashToBytes(password)
+		return 0, fmt.Errorf("user pwd %s\n user-HashToBytes: %s\n required HashToBytes: %s\n: %w", password, pwHash, string(bts), err)
 	}
 
-	return nil
+	return id, nil
 }
