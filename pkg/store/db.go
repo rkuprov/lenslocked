@@ -6,7 +6,6 @@ import (
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"lenslocked/cfg"
-	"lenslocked/migrations"
 )
 
 type Store struct {
@@ -28,16 +27,4 @@ func NewStore(pCfg cfg.Postgres) (*Store, error) {
 	return &Store{
 		Psql: psql,
 	}, nil
-}
-
-func (s *Store) Setup(ctx context.Context) error {
-	_, err := s.Psql.Exec(ctx, migrations.UserTable)
-	if err != nil {
-		return err
-	}
-	_, err = s.Psql.Exec(ctx, migrations.SessionTable)
-	if err != nil {
-		return err
-	}
-	return nil
 }

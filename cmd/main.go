@@ -33,10 +33,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = client.Setup(ctx)
-	if err != nil {
-		panic(err)
-	}
 
 	r := chi.NewRouter()
 	r.Get("/", views.StaticView(views.Must(views.ParseTemplate("tailwind.gohtml", "home.gohtml"))))
