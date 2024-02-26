@@ -9,9 +9,6 @@
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
     <body class="min-h-screen bg-gray-100">
-    <div>
-        {{csrfField}}
-    </div>
     {{ template "header" .}}
     {{ template  "content" .}}
     {{ template "footer"}}
@@ -30,12 +27,14 @@
             <a class="text-lg font-semibold hover:text-blue-100 pr-8" href="/contact">Contact</a>
         </div>
         <div class="space-x-4">
-            <form action="/signout" method="post" class="inline pr-4">
-                <div class="hidden">
-                    {{csrfField}}
-                </div>
-                <button class="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded" type="submit">Sign out</button>
-            </form>
+            {{ if .Email}}
+                <form action="/signout" method="post" class="inline pr-4">
+                    <div class="hidden">
+                        {{csrfField}}
+                    </div>
+                    <button class="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded" type="submit">Sign out</button>
+                </form>
+            {{end}}
             <a class="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded" href="/signin">Sign in</a>
             <a class="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded" href="/signup">Sign Up</a>
         </div>

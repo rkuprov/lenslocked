@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"lenslocked/pkg/auth"
-	"log"
 	"net/http"
 
 	"lenslocked/pkg/services"
@@ -95,12 +94,6 @@ func (u User) SignOut(w http.ResponseWriter, r *http.Request) {
 	token, err := r.Cookie(auth.CookieTypeSession)
 	if err != nil {
 		http.Error(w, "could not find session", http.StatusUnauthorized)
-	}
-	csrf, err := r.Cookie("X-CSRF-Token")
-	log.Default().Printf("csrf %v", csrf)
-
-	if err != nil {
-		http.Error(w, "could not find csrf token", http.StatusUnauthorized)
 	}
 	// remove session cookie
 	auth.SetCookie(w, auth.CookieTypeSession, "")

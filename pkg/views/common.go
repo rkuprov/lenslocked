@@ -59,12 +59,22 @@ func (t *Template) Execute(w http.ResponseWriter, r *http.Request, data interfac
 func StaticView(tmpl *Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
+		tmpl.Funcs(template.FuncMap{
+			"csrfField": func() template.HTML {
+				return csrf.TemplateField(r)
+			},
+		})
 		tmpl.Execute(w, r, nil)
 	}
 }
 func RenderedView(tmpl *Template, data interface{}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
+		tmpl.Funcs(template.FuncMap{
+			"csrfField": func() template.HTML {
+				return csrf.TemplateField(r)
+			},
+		})
 		tmpl.Execute(w, r, data)
 	}
 }
