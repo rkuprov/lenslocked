@@ -49,6 +49,11 @@ func newCookie(name CookieType, value string) *http.Cookie {
 func SetCookie(w http.ResponseWriter, name CookieType, value string) {
 	http.SetCookie(w, newCookie(name, value))
 }
+func DeleteCookie(w http.ResponseWriter, name CookieType) {
+	c := newCookie(name, "")
+	c.MaxAge = -1
+	http.SetCookie(w, c)
+}
 
 func HashToBytes(toHash string) ([]byte, error) {
 	return bcrypt.GenerateFromPassword([]byte(toHash), bcrypt.DefaultCost)

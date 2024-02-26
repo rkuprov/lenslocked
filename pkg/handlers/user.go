@@ -96,9 +96,9 @@ func (u User) SignOut(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "could not find session", http.StatusUnauthorized)
 	}
 	// remove session cookie
-	auth.SetCookie(w, auth.CookieTypeSession, "")
+	auth.DeleteCookie(w, auth.CookieTypeSession)
 	// remove session from db
-	err = u.Session.Delete(auth.SHAHash(token.Value))
+	err = u.Session.Delete(token.Value)
 	if err != nil {
 		http.Error(w, "could not delete session", http.StatusInternalServerError)
 	}
