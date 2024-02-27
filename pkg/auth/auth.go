@@ -55,17 +55,21 @@ func DeleteCookie(w http.ResponseWriter, name CookieType) {
 	http.SetCookie(w, c)
 }
 
-func HashToBytes(toHash string) ([]byte, error) {
+func hashToBytes(toHash string) ([]byte, error) {
 	return bcrypt.GenerateFromPassword([]byte(toHash), bcrypt.DefaultCost)
 }
 
 func HashToString(toHash string) (string, error) {
-	bts, err := HashToBytes(toHash)
+	bts, err := hashToBytes(toHash)
 	if err != nil {
 		return "", err
 	}
 
 	return base64.URLEncoding.EncodeToString(bts), nil
+}
+
+func StringToHash(toHash string) ([]byte, error) {
+	return base64.URLEncoding.DecodeString(toHash)
 }
 
 func SHAHash(toHash string) string {

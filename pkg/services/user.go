@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"lenslocked/pkg/auth"
 	"lenslocked/pkg/store"
+	"log"
 	"strings"
 	"time"
 )
@@ -26,7 +27,7 @@ func (s *UserService) Create(email, password string) (int, error) {
 	var id int
 	pwHash, err := auth.HashToString(password)
 	if err != nil {
-		return 0, fmt.Errorf("could not HashToBytes password: %w", err)
+		return 0, fmt.Errorf("could not hashToBytes password: %w", err)
 
 	}
 	err = s.db.Psql.QueryRow(s.ctx, UserAddSQL,
@@ -47,10 +48,15 @@ func (s *UserService) Authenticate(email, password string) (int, error) {
 		return 0, fmt.Errorf("could not find user: %w", err)
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(pwHash), []byte(password))
+	bts, err := auth.StringToHash(pwHash)
 	if err != nil {
-		bts, _ := auth.HashToBytes(password)
-		return 0, fmt.Errorf("user pwd %s\n user-HashToBytes: %s\n required HashToBytes: %s\n: %w", password, pwHash, string(bts), err)
+		log.Default().Printf("error hashing password: %s\n", pwHash)
+		return 0, fmt.Errorf("could not hashToBytes password: %w", err)
+
+	}
+	err = bcrypt.CompareHashAndPassword(bts, []byte(password))
+	if err != nil {
+		return 0, fmt.Errorf("user pwd %s\n n: %w\n", password, err)
 	}
 
 	return id, nil

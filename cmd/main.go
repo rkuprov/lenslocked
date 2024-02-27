@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gorilla/csrf"
 	"lenslocked/pkg/auth"
-	"log"
 	"net/http"
 	"path/filepath"
 
@@ -51,27 +50,28 @@ func main() {
 	r.Post("/signout", u.SignOut)
 	r.Get("/user/me", u.Me)
 
-	middleware := func(in http.Handler) http.Handler {
-		c := csrf.Protect(auth.NewCSRFToken(), csrf.Secure(false))
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			showRequest(r)
-			c(in).ServeHTTP(w, r)
-		})
-	}
+	csrfMwr := csrf.Protect(auth.NewCSRFToken(), csrf.Secure(false))
+	//middleware := func(in http.Handler) http.Handler {
+	//	c := csrf.Protect(auth.NewCSRFToken(), csrf.Secure(false))
+	//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	//		showRequest(r)
+	//c(in).ServeHTTP(w, r)
+	//})
+	//}
 
-	err = http.ListenAndServe("localhost:3000", middleware(r))
+	err = http.ListenAndServe("localhost:3000", csrfMwr(r))
 	if err != nil {
 		panic(err)
 	}
 }
 
-func showRequest(r *http.Request) {
-	log.Default().Println(r.Method)
-	for _, cookie := range r.Cookies() {
-		log.Default().Printf("cookie: %v", cookie)
-	}
-	for _, header := range r.Header {
-		log.Default().Printf("header: %s", header)
-	}
-	log.Default().Println("*****************")
-}
+//func showRequest(r *http.Request) {
+//	log.Default().Println(r.Method)
+//	for _, cookie := range r.Cookies() {
+//		log.Default().Printf("cookie: %v", cookie)
+//	}
+//	for _, header := range r.Header {
+//		log.Default().Printf("header: %s", header)
+//	}
+//	log.Default().Println("*****************")
+//}
