@@ -3,6 +3,8 @@ package views
 import (
 	"fmt"
 	"html/template"
+	"lenslocked/pkg/datamodel"
+	"lenslocked/pkg/services"
 	"lenslocked/pkg/views/templates"
 	"net/http"
 
@@ -30,6 +32,9 @@ func ParseTemplate(patterns ...string) (*Template, error) {
 		"csrfField": func() (template.HTML, error) {
 			return "", fmt.Errorf("csrfField not implemented")
 		},
+		"currentUser": func() (*datamodel.User, error) {
+			return nil, fmt.Errorf("currentUser not implemented")
+		},
 	})
 	t, err := tpl.ParseFS(templates.FS, patterns...)
 	if err != nil {
@@ -48,6 +53,12 @@ func (t *Template) Execute(w http.ResponseWriter, r *http.Request, data interfac
 		"csrfField": func() template.HTML {
 			return csrf.TemplateField(r)
 		},
+		"currentUser": func() *datamodel.User {
+			if u := services.GetUserCtx(r.Context()); u != nil {
+				return u
+			}
+			return nil
+		},
 	})
 	err = tmpl.Execute(w, data)
 	if err != nil {
@@ -63,6 +74,12 @@ func StaticView(tmpl *Template) http.HandlerFunc {
 			"csrfField": func() template.HTML {
 				return csrf.TemplateField(r)
 			},
+			"currentUser": func() *datamodel.User {
+				if u := services.GetUserCtx(r.Context()); u != nil {
+					return u
+				}
+				return nil
+			},
 		})
 		tmpl.Execute(w, r, nil)
 	}
@@ -73,6 +90,12 @@ func RenderedView(tmpl *Template, data interface{}) http.HandlerFunc {
 		tmpl.Funcs(template.FuncMap{
 			"csrfField": func() template.HTML {
 				return csrf.TemplateField(r)
+			},
+			"currentUser": func() *datamodel.User {
+				if u := services.GetUserCtx(r.Context()); u != nil {
+					return u
+				}
+				return nil
 			},
 		})
 		tmpl.Execute(w, r, data)
