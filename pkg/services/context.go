@@ -50,3 +50,15 @@ func (u *UserMiddleware) SetUser(handler http.Handler) http.Handler {
 		handler.ServeHTTP(w, r)
 	})
 }
+
+func (u *UserMiddleware) RequireUser(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := GetUserCtx(r.Context())
+		if user == nil {
+			log.Default().Println("could not find user in context. redirecting to signin.")
+			http.Redirect(w, r, "/signin", http.StatusFound)
+			return
+		}
+		handler.ServeHTTP(w, r)
+	})
+}

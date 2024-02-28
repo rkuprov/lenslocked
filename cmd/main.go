@@ -58,7 +58,15 @@ func main() {
 	r.Get("/signin", u.SignInStatic)
 	r.Post("/signin", u.SignIn)
 	r.Post("/signout", u.SignOut)
-	r.Get("/user/me", u.Me)
+
+	r.Route("/user", func(r chi.Router) {
+		r.Use(csrfMwr)
+		r.Use(userMwr.SetUser)
+		r.Use(userMwr.RequireUser)
+		r.Get("/me", u.Me)
+		// todo: try removing to see if csrf cooke breaks
+		r.Post("/signout", u.SignOut)
+	})
 
 	//middleware := func(in http.Handler) http.Handler {
 	//	c := csrf.Protect(auth.NewCSRFToken(), csrf.Secure(false))

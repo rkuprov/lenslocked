@@ -8,5 +8,6 @@ var (
 								SET token_hash=$2, created_at = $3 
 								returning id`
 	SessionGetUserSQL = "SELECT u.id, u.email FROM users u JOIN sessions s ON u.id = s.user_id WHERE s.token_hash = $1"
+	SessionGetSQL     = "SELECT id  FROM sessions WHERE user_id = $1"
 	SessionDeleteSQL  = "DELETE FROM sessions WHERE token_hash = $1"
 )

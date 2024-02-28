@@ -2,5 +2,6 @@
     <div class="hidden">
         {{csrfField}}
     </div>
-    <h2>Welcome to your account {{.Email}}</h2>
+    <h2 class="font-semibold text-lg">Welcome to your account {{.User.Email}}</h2>
+    <p>Your session id is {{.SessionID}}</p>
 {{end}}

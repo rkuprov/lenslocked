@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"lenslocked/pkg/auth"
+	"lenslocked/pkg/datamodel"
 	"log"
 	"net/http"
 
@@ -84,7 +85,18 @@ func (u User) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u.Templates.Me.Execute(w, r, user)
+	session := u.Session.GetSessionID(user.ID)
+
+	data := struct {
+		SessionID int
+
+		*datamodel.User
+	}{
+		SessionID: session,
+		User:      user,
+	}
+
+	u.Templates.Me.Execute(w, r, data)
 }
 
 func (u User) SignOut(w http.ResponseWriter, r *http.Request) {

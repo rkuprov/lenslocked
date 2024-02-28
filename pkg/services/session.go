@@ -71,6 +71,14 @@ func (s *SessionService) GetUserForSession(token string) (*datamodel.User, error
 
 	return user, nil
 }
+func (s *SessionService) GetSessionID(userID int) int {
+	var id int
+	err := s.db.Psql.QueryRow(s.ctx, SessionGetSQL, userID).Scan(&id)
+	if err != nil {
+		return 0
+	}
+	return id
+}
 
 func (s *SessionService) Delete(token string) error {
 	_, err := s.db.Psql.Exec(s.ctx, SessionDeleteSQL, auth.SHAHash(token))
