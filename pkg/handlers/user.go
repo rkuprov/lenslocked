@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"lenslocked/pkg/auth"
+	"log"
 	"net/http"
 
 	"lenslocked/pkg/services"
@@ -76,14 +77,10 @@ func (u User) SignIn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u User) Me(w http.ResponseWriter, r *http.Request) {
-	token, err := r.Cookie(auth.CookieTypeSession)
-	if err != nil {
+	user := services.GetUserCtx(r.Context())
+	if user == nil {
+		log.Default().Println("could not find user in context. redirecting to signin.")
 		http.Redirect(w, r, "/signin", http.StatusFound)
-		return
-	}
-	user, err := u.Session.GetUserForSession(token.Value)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -102,6 +99,10 @@ func (u User) SignOut(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "could not delete session", http.StatusInternalServerError)
 	}
+
+	// delete user from context
+	ctx := services.DeleteUserCtx(r.Context())
+	r = r.WithContext(ctx)
 
 	http.Redirect(w, r, "/", http.StatusFound)
 }
